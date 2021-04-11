@@ -1,0 +1,414 @@
+---
+title: "DSC 680 Project 1"
+output: pdf_document
+---
+
+```{r}
+library(readxl)
+
+
+data <- read.csv('cars.csv')
+data
+```
+
+```{r}
+data <- subset( data, select = -c( feature_0 : feature_9 ))
+data <- subset( data, select = -c( is_exchangeable : location_region ))          
+data
+
+```
+
+
+
+
+```{r}
+
+unique(data$manufacturer_name)
+
+data <- data[which(data$manufacturer_name != "ÐœÐ¾Ñ\u0081ÐºÐ²Ð¸Ñ‡"),]
+data <- data[which(data$manufacturer_name != "Ð£Ð\u0090Ð—"),]
+data <- data[which(data$manufacturer_name != "Ð’Ð\u0090Ð—"),]
+data <- data[which(data$manufacturer_name != "Ð“Ð\u0090Ð—"),]
+data <- data[which(data$manufacturer_name != "Ð—Ð\u0090Ð—"),]
+
+
+data
+unique(data$manufacturer_name)
+
+
+```
+
+
+```{r}
+
+library(plotly)
+
+fig <- plot_ly(x = data$manufacturer_name,
+             type = "histogram")
+fig
+
+
+fig <- plot_ly(x = data$color,
+             type = "histogram")
+fig
+
+fig <- plot_ly(x = data$year_produced,
+             type = "histogram")
+
+
+fig <- fig %>% layout(xaxis = list(range = c(1977, 2019), title = 'Year of Car'), yaxis = list(title = 'Frequency'))
+
+fig
+
+fig <- plot_ly(x = data$transmission,
+             type = "histogram")
+
+fig
+
+fig <- plot_ly(x = data$price_usd,
+             type = "histogram")
+
+fig
+
+```
+
+
+
+
+```{r}
+
+data$odometer_value <- data$odometer_value * 0.621371
+colnames(data)[colnames(data) == 'odometer_value'] <- 'odometer_miles'
+
+fig <- plot_ly(y = ~data$odometer_miles, type = "box", name = 'Odometer',labels= (y="Miles"))
+
+
+fig
+
+```
+
+
+```{r}
+cor(data$odometer_miles,data$price_usd, method = 'spearman')
+
+cor(data$year_produced,data$price_usd, method = 'spearman')
+
+cor(data$number_of_photos,data$price_usd, method = 'spearman')
+
+cor(data$duration_listed,data$price_usd, method = 'spearman')
+
+
+
+```
+
+
+```{r}
+library(data.table)
+
+
+library(ggplot2)
+
+samp <- data.table(data)
+samp <- samp[sample(.N, 1000)]
+
+ggplot(data = samp, aes(x= samp$odometer_miles, y = samp$price_usd)) + geom_point() + geom_smooth(method = 'lm')  + ggtitle('Miles vs Price for Sample of 1000') + labs(x = 'Miles', y = 'Price in USD')
+
+```
+
+
+
+
+night_uber <- cab_uber[which(cab_uber$Time > 19),]
+
+```{r}
+
+ford <- data[which(data$manufacturer_name == "Ford"),]
+audi <- data[which(data$manufacturer_name == "Audi"),]
+mazda <- data[which(data$manufacturer_name == "Mazda"),]
+bmw <- data[which(data$manufacturer_name == "BMW"),]
+
+
+ford_sum <- lm(ford$price_usd ~ ford$odometer_miles, data = ford)
+
+audi_sum <- lm(audi$price_usd ~ audi$odometer_miles,   data = audi)
+
+mazda_sum <- lm(mazda$price_usd ~ mazda$odometer_miles, data = mazda)
+
+bmw_sum <- lm(bmw$price_usd ~ bmw$odometer_miles,   data = bmw)
+
+
+
+summary(ford_sum)
+summary(audi_sum)
+summary(mazda_sum)
+summary(bmw_sum)
+
+
+
+```
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+```{r}
+
+data <- read.csv('USA_cars_datasets.csv')
+data
+```
+
+```{r}
+data <- subset( data, select = -c( X))
+data <- subset( data, select = -c( title_status))
+data <- subset( data, select = -c( vin))
+data <- subset( data, select = -c( lot))
+data <- subset( data, select = -c( country:condition))
+
+data
+
+```
+
+
+
+
+```{r}
+
+unique(data$brand)
+
+
+unique(data$state)
+
+
+```
+
+
+```{r}
+
+library(plotly)
+
+fig <- plot_ly(x = data$brand,
+             type = "histogram")
+fig
+
+
+fig <- plot_ly(x = data$year,
+             type = "histogram")
+
+fig <- fig %>% layout(xaxis = list(range = c(1996, 2020), title = 'Year of Car'), yaxis = list(title = 'Frequency'))
+
+
+fig
+
+fig <- plot_ly(x = data$color,
+             type = "histogram")
+
+
+fig <- plot_ly(x = data$mileage,
+             type = "histogram")
+
+fig <- fig %>% layout(xaxis = list(range = c(0, 325000), title = 'Car Mileage'), yaxis = list(title = 'Frequency'))
+
+
+fig
+
+
+
+```
+
+
+
+
+
+```{r}
+
+
+
+
+cor(data$year,data$price, method = 'spearman')
+
+cor(data$mileage,data$price, method = 'spearman')
+
+
+
+
+
+```
+
+
+```{r}
+library(data.table)
+library("scales")
+
+library(ggplot2)
+
+
+data <- data[which(data$mileage <500000),] #removed outliers with a million miles
+
+
+samp <- data.table(data)
+samp <- samp[sample(.N, 1000)]
+
+ggplot(data = samp, aes(x= samp$mileage, y = samp$price)) + geom_point() +  ylim(0, 70000)+ scale_x_continuous(labels = comma)+ geom_smooth(method = 'lm')  + ggtitle('Miles vs Price for Sample of 1000') + labs(x = 'Miles', y = 'Price in USD')
+
+```
+
+
+
+
+
+```{r}
+
+ford <- data[which(data$brand == "ford"),]
+audi <- data[which(data$brand == "audi"),]
+mazda <- data[which(data$brand == "mazda"),]
+toyota <- data[which(data$brand == "toyota"),]
+
+
+ford_sum <- lm(ford$price ~ ford$mileage, data = ford)
+
+audi_sum <- lm(audi$price ~ audi$mileage,   data = audi)
+
+mazda_sum <- lm(mazda$price ~ mazda$mileage, data = mazda)
+
+toyota_sum <- lm(toyota$price ~ toyota$mileage,   data = toyota)
+
+
+
+summary(ford_sum)
+summary(audi_sum)
+summary(mazda_sum)
+summary(toyota_sum)
+
+#write.csv(data,"cars_usa_dataset.csv")
+
+```
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+```{r}
+
+data <- read.csv('vehicles.csv')
+data
+```
+
+
+
+```{r}
+data <- subset( data, select = -c( X:region_url))
+data <- subset( data, select = -c( cylinders:fuel))
+data <- subset( data, select = -c( title_status))
+data <- subset( data, select = -c( VIN:image_url))
+data <- subset( data, select = -c( description:posting_date))
+
+data
+
+```
+
+
+```{r}
+unique(data$manufacturer)
+
+
+unique(data$year)
+
+```
+
+
+
+
+```{r}
+data <- data[which(data$manufacturer != "harley-davidson"),]
+
+data <- data[which(data$year != "NA"),]
+data <- data[which(data$odometer != "NA"),]
+data <- data[which(data$odometer != 0),]
+
+data <- data[which(data$odometer < 500000),]
+data <- data[which(data$odometer > 999),]
+
+data
+
+```
+
+
+
+
+```{r}
+
+
+
+
+cor(data$year,data$price, method = 'spearman')
+
+cor(data$odometer,data$price, method = 'spearman')
+
+
+
+
+
+```
+
+
+
+
+```{r}
+
+library(plotly)
+
+fig <- plot_ly(x = data$manufacturer,
+             type = "histogram")
+fig
+
+
+fig <- plot_ly(x = data$year,
+             type = "histogram")
+
+#fig <- fig %>% layout(xaxis = list(range = c(1996, 2020), title = 'Year of Car'), yaxis = list(title = 'Frequency'))
+
+
+fig
+
+fig <- plot_ly(x = data$transmission,
+             type = "histogram")
+
+
+fig <- plot_ly(x = data$odometer,
+             type = "histogram")
+
+fig <- fig %>% layout(xaxis = list(range = c(0, 450000), title = 'Car Mileage'), yaxis = list(title = 'Frequency'))
+
+
+fig
+
+
+
+```
+
+
+```{r}
+
+#write.csv(data,"cars_large_dataset.csv")
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
